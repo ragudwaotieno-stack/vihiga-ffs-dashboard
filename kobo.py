@@ -54,7 +54,8 @@ def prepare(df: pd.DataFrame, dedupe: bool = True):
         return df, info
     df = df.copy()
     for c in QTY_COLS:
-        df[c] = pd.to_numeric(df[c] if c in df else 0, errors="coerce").fillna(0).astype(int)
+        # Kobo only sends columns for species someone actually chose, so many are missing early on
+        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int) if c in df else 0
     for c in ("subcounty_name", "ward_name", "ffs_group", "farmer_name", "farmer_phone",
               "facilitator_name", "physical_location", "aez_final"):
         if c not in df:
@@ -68,8 +69,9 @@ def prepare(df: pd.DataFrame, dedupe: bool = True):
     df = df[df["ward_name"] != ""]
 
     df["ffs_group_clean"] = df["ffs_group"].str.replace(r"\s+", " ", regex=True).str.upper()
-    df["farmer_no"] = pd.to_numeric(df["farmer_no"] if "farmer_no" in df else None, errors="coerce")
-    df["submitted"] = pd.to_datetime(df["_submission_time"] if "_submission_time" in df else None, errors="coerce", utc=True)
+    blank = pd.Series([None] * len(df), index=df.index)
+    df["farmer_no"] = pd.to_numeric(df["farmer_no"] if "farmer_no" in df else blank, errors="coerce")
+    df["submitted"] = pd.to_datetime(df["_submission_time"] if "_submission_time" in df else blank, errors="coerce", utc=True)
 
     ind = [c for c in QTY_COLS if CATEGORY[c] == "Indigenous"]
     fru = [c for c in QTY_COLS if CATEGORY[c] != "Indigenous"]
