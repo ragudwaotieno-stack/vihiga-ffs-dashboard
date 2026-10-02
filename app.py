@@ -165,6 +165,11 @@ with T[1]:
     st.caption("One row per FFS group, one column per species – the single request per group for KEFRI.")
     g = kobo.group_table(df)
     st.dataframe(g, width="stretch", hide_index=True)
+    ob = kobo.others_by_group(df)
+    if not ob.empty:
+        st.subheader("Species added by farmers (not on the list)")
+        st.caption("Written in by farmers under 'Other'. Spelling differences in capitals and spaces are merged.")
+        st.dataframe(ob, width="stretch", hide_index=True)
     download("Download group consolidation (Excel)", df, f"FFS_seedlings_{stamp}.xlsx")
 
 # ------------------------------------------------------------------ Wards & sub-counties
